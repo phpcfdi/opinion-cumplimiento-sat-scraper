@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace PhpCfdi\OpinionCumplimientoSatScraper\Exceptions;
 
-class CaptchaSourceNotFoundException extends SATException
+class CaptchaSourceNotFoundException extends SatException
 {
 }

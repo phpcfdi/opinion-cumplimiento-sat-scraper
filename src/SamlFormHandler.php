@@ -6,10 +6,11 @@ namespace PhpCfdi\OpinionCumplimientoSatScraper;
 
 use GuzzleHttp\ClientInterface;
 
-readonly class SamlFormHandler
+/** @internal */
+final readonly class SamlFormHandler
 {
     public function __construct(
-        private ClientInterface $client
+        private ClientInterface $client,
     ) {
     }
 
@@ -21,17 +22,17 @@ readonly class SamlFormHandler
             ]),
         ]);
 
-        $html = (string)$response->getBody();
+        $html = (string) $response->getBody();
 
         $form = FormUtils::extractForm($html);
 
-        $this->client->request('POST', $form->getAction(), [
+        $this->client->request('POST', $form->action, [
             'headers' => Headers::merge([
                 'Referer' => $redirectUrl,
             ]),
-            'form_params' => $form->getFields(),
+            'form_params' => $form->fields,
         ]);
 
-        return $form->getAction();
+        return $form->action;
     }
 }

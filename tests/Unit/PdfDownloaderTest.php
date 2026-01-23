@@ -8,9 +8,10 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Response;
 use PhpCfdi\OpinionCumplimientoSatScraper\Exceptions\PdfDownloadException;
 use PhpCfdi\OpinionCumplimientoSatScraper\PdfDownloader;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-class PdfDownloaderTest extends TestCase
+final class PdfDownloaderTest extends TestCase
 {
     public function testDownloadSuccessfullyReturnsPdfContent(): void
     {
@@ -33,11 +34,12 @@ class PdfDownloaderTest extends TestCase
             ->with(
                 'POST',
                 $this->anything(),
-                $this->callback(function ($options) use ($rfc, $referer) {
+                $this->callback(function (array $options) use ($rfc, $referer) {
                     $this->assertArrayHasKey('json', $options);
                     $this->assertArrayHasKey('headers', $options);
 
                     $json = $options['json'];
+                    $this->assertIsArray($json);
                     $this->assertSame('G', $json['canal']);
                     $this->assertSame('', $json['curp']);
                     $this->assertSame('127.0.0.1', $json['ip']);
@@ -48,15 +50,16 @@ class PdfDownloaderTest extends TestCase
                     $this->assertSame($rfc, $json['rfcCorto']);
                     $this->assertNotEmpty($json['idCorrelacion']);
 
+                    $this->assertIsArray($options['headers']);
                     $this->assertSame($referer, $options['headers']['Referer']);
 
                     return true;
-                })
+                }),
             )
-            ->willReturn(new Response(200, [], json_encode($responseData)));
+            ->willReturn(new Response(200, [], json_encode($responseData, JSON_THROW_ON_ERROR)));
 
         $downloader = new PdfDownloader($client);
-        $result = $downloader->download($rfc, $referer);
+        $result = (string) $downloader->download($rfc, $referer);
 
         $this->assertSame($pdfContent, $result);
     }
@@ -77,12 +80,100 @@ class PdfDownloaderTest extends TestCase
         $client = $this->createMock(ClientInterface::class);
         $client->expects($this->once())
             ->method('request')
-            ->willReturn(new Response(200, [], json_encode($responseData)));
+            ->willReturn(new Response(200, [], json_encode($responseData, JSON_THROW_ON_ERROR)));
 
         $downloader = new PdfDownloader($client);
 
         $this->expectException(PdfDownloadException::class);
-        $this->expectExceptionMessage('Error obtaining PDF: El RFC no tiene opinión de cumplimiento disponible');
+        $this->expectExceptionMessage('El RFC no tiene opinión de cumplimiento disponible');
+
+        $downloader->download($rfc, $referer);
+    }
+
+    /** @return array<array{mixed, string}> */
+    public static function providerDownloadThrowsExceptionWhenMalformedResponses(): array
+    {
+        return [
+            'not an array' => [
+                null,
+                'The response does not have a valid JSON object response.',
+            ],
+            'empty array' => [
+                [],
+                'The response does not have a valid JSON object response.',
+            ],
+            'non set Respuesta' => [
+                [
+                    'Foo' => '',
+                ],
+                'The response does not have the "Respuesta" element.',
+            ],
+            'null Respuesta' => [
+                [
+                    'Respuesta' => null,
+                ],
+                'The response does not have the "Respuesta" element.',
+            ],
+            'empty array Respuesta' => [
+                [
+                    'Respuesta' => [],
+                ],
+                'The response does not have the "Respuesta" element.',
+            ],
+            'empty Respuesta.Exito' => [
+                [
+                    'Respuesta' => [
+                        'Exito' => null,
+                        'Mensaje' => 'Exito is null',
+                    ],
+                ],
+                'Exito is null',
+            ],
+            'false Respuesta.Exito' => [
+                [
+                    'Respuesta' => [
+                        'Exito' => false,
+                        'Mensaje' => 'Exito is false',
+                    ],
+                ],
+                'Exito is false',
+            ],
+            'false Respuesta.Exito without Message' => [
+                [
+                    'Respuesta' => [
+                        'Exito' => false,
+                    ],
+                ],
+                '(sin mensaje de error)',
+            ],
+            'empty ContenidoBase64' => [
+                [
+                    'Respuesta' => [
+                        'Exito' => true,
+                    ],
+                ],
+                'The response does not have the content on Base64.',
+            ],
+        ];
+    }
+
+    #[DataProvider('providerDownloadThrowsExceptionWhenMalformedResponses')]
+    public function testDownloadThrowsExceptionWhenMalformedResponses(mixed $data, string $expectedMessage): void
+    {
+        $rfc = 'MAGG8901015J2';
+        $referer = 'https://ptsc32d.clouda.sat.gob.mx';
+
+        $responseData = $data;
+
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('request')
+            ->willReturn(new Response(200, [], json_encode($responseData, JSON_THROW_ON_ERROR)));
+
+        $downloader = new PdfDownloader($client);
+
+        $this->expectException(PdfDownloadException::class);
+        $this->expectExceptionMessage($expectedMessage);
 
         $downloader->download($rfc, $referer);
     }
@@ -109,10 +200,10 @@ class PdfDownloaderTest extends TestCase
         $client = $this->createMock(ClientInterface::class);
         $client->expects($this->once())
             ->method('request')
-            ->willReturn(new Response(200, [], json_encode($responseData)));
+            ->willReturn(new Response(200, [], json_encode($responseData, JSON_THROW_ON_ERROR)));
 
         $downloader = new PdfDownloader($client);
-        $result = $downloader->download($rfc, $referer);
+        $result = (string) $downloader->download($rfc, $referer);
 
         $this->assertStringStartsWith('%PDF-1.4', $result);
         $this->assertSame($actualPdfHeader, $result);
@@ -134,9 +225,9 @@ class PdfDownloaderTest extends TestCase
             ->with(
                 'POST',
                 $this->anything(),
-                $this->callback(function ($options) use ($rfc) {
+                $this->callback(function (array $options) use ($rfc) {
                     $json = $options['json'];
-
+                    $this->assertIsArray($json);
                     $this->assertArrayHasKey('canal', $json);
                     $this->assertArrayHasKey('curp', $json);
                     $this->assertArrayHasKey('idCorrelacion', $json);
@@ -155,9 +246,9 @@ class PdfDownloaderTest extends TestCase
                     $this->assertSame($rfc, $json['rfcCorto']);
 
                     return true;
-                })
+                }),
             )
-            ->willReturn(new Response(200, [], json_encode($responseData)));
+            ->willReturn(new Response(200, [], json_encode($responseData, JSON_THROW_ON_ERROR)));
 
         $downloader = new PdfDownloader($client);
         $downloader->download($rfc, $referer);

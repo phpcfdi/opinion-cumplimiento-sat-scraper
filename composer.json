@@ -1,14 +1,30 @@
 {
   "name": "phpcfdi/opinion-cumplimiento-sat-scraper",
-  "description": "Web Scraping para extraer la Opinión de Cumplimiento desde la página del SAT",
-  "type": "library",
+  "description": "Scraper para descargar la Opinión de Cumplimiento del SAT México",
   "license": "MIT",
+  "type": "library",
   "authors": [
     {
       "name": "Cesar Aguilera",
       "email": "cesargnu29@gmail.com"
     }
   ],
+  "homepage": "https://github.com/phpcfdi/opinion-cumplimiento-sat-scraper",
+  "support": {
+    "issues": "https://github.com/phpcfdi/opinion-cumplimiento-sat-scraper/issues",
+    "source": "https://github.com/phpcfdi/opinion-cumplimiento-sat-scraper"
+  },
+  "require": {
+    "php": ">=8.2",
+    "ext-curl": "*",
+    "guzzlehttp/guzzle": "^7.10",
+    "phpcfdi/image-captcha-resolver": "^0.3.0",
+    "symfony/css-selector": "^7.4 || ^8.0",
+    "symfony/dom-crawler": "^7.4 || ^8.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.5"
+  },
   "autoload": {
     "psr-4": {
       "PhpCfdi\\OpinionCumplimientoSatScraper\\": "src/"
@@ -19,43 +35,40 @@
       "PhpCfdi\\OpinionCumplimientoSatScraper\\Tests\\": "tests/"
     }
   },
-  "require": {
-    "ext-curl": "*",
-    "guzzlehttp/guzzle": "^7.0",
-    "symfony/dom-crawler": "^7.0 || ^8.0",
-    "symfony/css-selector": "^7.0 || ^8.0",
-    "symfony/browser-kit": "^8.0",
-    "symfony/http-client": "^8.0",
-    "phpcfdi/image-captcha-resolver": "^0.3.0"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^10.0",
-    "squizlabs/php_codesniffer": "^4.0"
-  },
   "config": {
     "allow-plugins": {
-      "php-http/discovery": true
+      "php-http/discovery": false
     }
   },
   "scripts": {
-    "test": "phpunit",
-    "test-coverage": "phpunit --coverage-html coverage",
-    "dev:check-style": [
-      "@php vendor/bin/phpcs --colors -sp"
-    ],
-    "dev:fix-style": [
-      "@php vendor/bin/phpcbf --colors -sp"
-    ],
     "dev:build": [
       "@dev:fix-style",
-      "@test"
+      "@dev:test"
+    ],
+    "dev:check-style": [
+      "@php tools/composer-normalize normalize --dry-run",
+      "@php tools/php-cs-fixer fix --dry-run --verbose",
+      "@php tools/phpcs --colors -sp src/ tests/"
+    ],
+    "dev:coverage": [
+      "@php -dzend_extension=xdebug.so -dxdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage/html/"
+    ],
+    "dev:fix-style": [
+      "@php tools/composer-normalize normalize",
+      "@php tools/php-cs-fixer fix --verbose",
+      "@php tools/phpcbf --colors -sp src/ tests/"
+    ],
+    "dev:test": [
+      "@dev:check-style",
+      "@php vendor/bin/phpunit --stop-on-failure",
+      "@php tools/phpstan analyse --no-interaction --no-progress"
     ]
   },
   "scripts-descriptions": {
-    "test": "Run PHPUnit tests",
-    "test-coverage": "Run PHPUnit tests with code coverage",
-    "dev:check-style": "DEV: search for code style errors using phpcs",
-    "dev:fix-style": "DEV: fix code style errors using phpcbf",
-    "dev:build": "DEV: run dev:fix-style and test, run before pull request"
+    "dev:build": "DEV: run dev:fix-style and dev:tests, run before pull request",
+    "dev:check-style": "DEV: search for code style errors using composer-normalize, php-cs-fixer and phpcs",
+    "dev:coverage": "DEV: run phpunit with xdebug and storage coverage in build/coverage/html/",
+    "dev:fix-style": "DEV: fix code style errors using composer-normalize, php-cs-fixer and phpcbf",
+    "dev:test": "DEV: run @dev:check-style, phpunit and phpstan"
   }
 }

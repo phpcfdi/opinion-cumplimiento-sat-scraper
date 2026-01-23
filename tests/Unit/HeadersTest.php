@@ -7,13 +7,12 @@ namespace PhpCfdi\OpinionCumplimientoSatScraper\Tests\Unit;
 use PhpCfdi\OpinionCumplimientoSatScraper\Headers;
 use PHPUnit\Framework\TestCase;
 
-class HeadersTest extends TestCase
+final class HeadersTest extends TestCase
 {
     public function testDefaultHeadersReturnsUserAgent(): void
     {
         $headers = Headers::defaultHeaders();
 
-        $this->assertIsArray($headers);
         $this->assertArrayHasKey('User-Agent', $headers);
         $this->assertStringContainsString('Mozilla', $headers['User-Agent']);
         $this->assertStringContainsString('Firefox', $headers['User-Agent']);

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace PhpCfdi\OpinionCumplimientoSatScraper;
 
-class Headers
+/** @internal  */
+final class Headers
 {
+    /** @return array<string, string> */
     public static function defaultHeaders(): array
     {
         return [
@@ -13,8 +15,12 @@ class Headers
         ];
     }
 
+    /**
+     * @param array<string, string> $headers
+     * @return array<string, string>
+     */
     public static function merge(array $headers): array
     {
-        return array_merge(self::defaultHeaders(), $headers);
+        return array_merge(static::defaultHeaders(), $headers);
     }
 }

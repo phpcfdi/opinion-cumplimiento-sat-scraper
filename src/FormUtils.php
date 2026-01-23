@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace PhpCfdi\OpinionCumplimientoSatScraper;
 
-use PhpCfdi\OpinionCumplimientoSatScraper\Exceptions\SATException;
+use PhpCfdi\OpinionCumplimientoSatScraper\Exceptions\SatException;
 
-class FormUtils
+/** @internal */
+final class FormUtils
 {
     public static function extractForm(string $html): FormExtractionResult
     {
         if (! preg_match('/<form[^>]+action="([^"]+)"[^>]*>/i', $html, $m)) {
-            throw new SATException('Not found SAML form in the response');
+            throw new SatException('Not found SAML form in the response');
         }
 
         $action = html_entity_decode($m[1]);

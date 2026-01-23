@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpCfdi\OpinionCumplimientoSatScraper\Exceptions;
 
-class InvalidCredentialsException extends LoginException
+use RuntimeException;
+
+class SatException extends RuntimeException
 {
 }

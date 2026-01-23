@@ -14,21 +14,17 @@ class HtmlParser
 
         $scriptNodes = $crawler->filter('script');
 
-        if ($scriptNodes->count() === 0) {
+        if (0 === $scriptNodes->count()) {
             return null;
         }
 
         $script = $scriptNodes->html();
 
-        if (! $script) {
+        if (! preg_match("/window\.location\.href\s*=\s*[\"']([^\"']+)[\"']/", $script, $matches)) {
             return null;
         }
 
-        if (preg_match("/window\.location\.href='([^']+)'/", $script, $matches)) {
-            return $matches[1];
-        }
-
-        return null;
+        return $matches[1];
     }
 
     public function hasCaptcha(string $html): bool

@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace PhpCfdi\OpinionCumplimientoSatScraper\Exceptions;
 
-class LoginPageNotLoadedException extends SATException
+class LoginPageNotLoadedException extends SatException
 {
-    protected ?string $html = null;
-
-    public function setHtml(string $html): void
+    public function __construct(string $message, private readonly string $html)
     {
-        $this->html = $html;
+        parent::__construct($message);
     }
 
     public function getHtml(): ?string
     {
+        // leave this getter since this is common on Exceptions
         return $this->html;
     }
 }

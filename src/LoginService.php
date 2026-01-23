@@ -8,12 +8,13 @@ use GuzzleHttp\ClientInterface;
 use PhpCfdi\OpinionCumplimientoSatScraper\Exceptions\LoginPageNotLoadedException;
 use PhpCfdi\OpinionCumplimientoSatScraper\Exceptions\RedirectUrlNotFoundException;
 
-readonly class LoginService
+/** @internal */
+final readonly class LoginService
 {
     public function __construct(
         private ClientInterface $client,
         private CaptchaExtractor $captchaExtractor,
-        private HtmlParser $htmlParser
+        private HtmlParser $htmlParser,
     ) {
     }
 
@@ -27,14 +28,12 @@ readonly class LoginService
         $response = $this->client->request('POST', URL::$login, [
             'headers' => Headers::merge([
                 'Referer' => URL::$main,
-            ])
+            ]),
         ]);
-        $html = (string)$response->getBody();
+        $html = (string) $response->getBody();
 
         if (! $this->htmlParser->hasCaptcha($html)) {
-            $exception = new LoginPageNotLoadedException('Unable to retrieve login form with captcha');
-            $exception->setHtml($html);
-            throw $exception;
+            throw new LoginPageNotLoadedException('Unable to retrieve login form with captcha', $html);
         }
 
         $captchaValue = $this->captchaExtractor->extractAndResolve($html);
