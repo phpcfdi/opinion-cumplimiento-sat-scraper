@@ -11,6 +11,15 @@ versión, aunque sí su incorporación en la rama principal de trabajo, generalm
 
 ## Listado de cambios
 
+### Versión 0.1.1 2026-04-06
+
+Se actualizó una URL intermedia relacionada con el proceso de acceso al portal.
+Gracias `is-david-dev` y `@blacktrue`.
+
+Se agrega como sugerencia la librería `phpcfdi/image-captcha-resolver-boxfactura-ai`.
+
+Se actualizan las herramientas de desarrollo.
+
 ### Versión 0.1.0 2026-01-22
 
 Primera versión pública disponible.

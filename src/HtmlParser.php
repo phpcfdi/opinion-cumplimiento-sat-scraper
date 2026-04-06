@@ -20,11 +20,11 @@ class HtmlParser
 
         $script = $scriptNodes->html();
 
-        if (! preg_match("/window\.location\.href\s*=\s*[\"']([^\"']+)[\"']/", $script, $matches)) {
+        if (! preg_match("/(?:window|top)\.location\.href\s*=\s*[\"']([^\"']+)[\"']/", $script, $matches)) {
             return null;
         }
 
-        return $matches[1];
+        return html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5);
     }
 
     public function hasCaptcha(string $html): bool
