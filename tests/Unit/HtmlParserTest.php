@@ -83,7 +83,7 @@ final class HtmlParserTest extends TestCase
             <head>
                 <script>
                     setTimeout(function() {
-                        window.location.href='https://login.mat.sat.gob.mx/nidp/saml2/sso?SAMLRequest=fZJdb4IwFIb%2FSsN9KW2hgJuJmW5LtizRbMvufSCVUaAlpdX59%2FuAZC7eee1Jn%2Fe8z2lPZ1Y0r%2ByhVN%2FkFYowvAjCEFMiMdVZnFHKIqY1S7jSoL2QaUJ0OY4Hg%2F44Ho1Go%2FF4PB6NR%2BPxaDQejcfj0Xg0Go%2FH49F4PBqNx%2BPxeDwejcfj8Xg8Ho%2FH49F4PB6Px%2BPxeDwej8fj8Xg8Ho%2FH4%2FH4Pw%3D%3D&RelayState=ss%3Amem%3A7c3b2e8f8c7e4d5a9b6c1e0f2d3a4b5c';
+                        window.location.href='https://loginda.siat.sat.gob.mx/nidp/saml2/sso?SAMLRequest=fZJdb4IwFIb%2FSsN9KW2hgJuJmW5LtizRbMvufSCVUaAlpdX59%2FuAZC7eee1Jn%2Fe8z2lPZ1Y0r%2ByhVN%2FkFYowvAjCEFMiMdVZnFHKIqY1S7jSoL2QaUJ0OY4Hg%2F44Ho1Go%2FF4PB6NR%2BPxaDQejcfj0Xg0Go%2FH49F4PBqNx%2BPxeDwejcfj8Xg8Ho%2FH49F4PB6Px%2BPxeDwej8fj8Xg8Ho%2FH4%2FH4Pw%3D%3D&RelayState=ss%3Amem%3A7c3b2e8f8c7e4d5a9b6c1e0f2d3a4b5c';
                     }, 1000);
                 </script>
             </head>
@@ -94,6 +94,27 @@ final class HtmlParserTest extends TestCase
 
         $this->assertStringContainsString('SAMLRequest=', $result);
         $this->assertStringContainsString('RelayState=', $result);
+    }
+
+    public function testExtractRedirectUrlWithTopLocationHref(): void
+    {
+        $html = <<<HTML
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <script type="text/javascript">
+                    top.location.href = "https://loginda.siat.sat.gob.mx/nidp/app/login?token=abc123";
+                </script>
+            </head>
+            <body>
+                <p>Redirigiendo...</p>
+            </body>
+            </html>
+            HTML;
+
+        $result = $this->parser->extractRedirectUrl($html);
+
+        $this->assertSame('https://loginda.siat.sat.gob.mx/nidp/app/login?token=abc123', $result);
     }
 
     public function testHasCaptchaReturnsTrue(): void
